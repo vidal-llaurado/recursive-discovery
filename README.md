@@ -73,8 +73,8 @@ The kernel is the component of the system that should remain understandable as m
 For a declared job $j$, an execution produces a record $r$. The kernel attaches an authentication tag to the record and its references:
 
 $$
- r=\operatorname{Exec}(j),\qquad
- e=(r,\operatorname{HMAC}_k(r,\text{references})).
+ r=\mathrm{Exec}(j),\qquad
+ e=(r,\mathrm{HMAC}_k(r,\text{references})).
 $$
 
 Here $j$ identifies the target, tool, declared inputs, and execution settings. The record includes the exit status, output, input digests, and runtime metadata. The signature attests to that record under the kernel's key.
@@ -142,7 +142,7 @@ Within a session, the model can inspect artifacts, search locally or in the lite
 Decisions and outcomes are separate records:
 
 $$
- d_j=(\operatorname{hash}(s_j),a_j,\text{payload}_j),\qquad
+ d_j=(\mathrm{hash}(s_j),a_j,\text{payload}_j),\qquad
  o_j\longrightarrow d_j,\qquad
  \mathcal H_t=\{(d_j,o_j)\}_{j\leq t}.
 $$

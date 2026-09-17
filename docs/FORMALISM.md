@@ -25,7 +25,7 @@ The components of $W_t$ are not disjoint databases. Instruments, grammar entries
 An artifact's identifier is content-derived:
 
 $$
-\operatorname{id}(a)=\operatorname{digest}(\text{kind},\text{data},\text{references},\text{author}).
+\mathrm{id}(a)=\mathrm{digest}(\text{kind},\text{data},\text{references},\text{author}).
 $$
 
 `core.py` uses a truncated SHA-256 digest for artifact IDs. `BlobStore` uses full SHA-256 digests for retained bytes. Creation time is not part of artifact identity. The ledger's public write operation appends or returns an existing content-identical record.
@@ -53,14 +53,14 @@ The base implementation hashes declared inputs, records runtime settings, and re
 Let $k$ be the kernel's signing key. In schematic form,
 
 $$
-\sigma=\operatorname{HMAC}_k(\text{kind},r,\text{references},\text{author}),\qquad
+\sigma=\mathrm{HMAC}_k(\text{kind},r,\text{references},\text{author}),\qquad
  e=(r,\sigma).
 $$
 
 `Kernel.verify(e)` checks this tag. The scientific distinction is
 
 $$
-\operatorname{Verify}_k(e)=\text{true}
+\mathrm{Verify}_k(e)=\text{true}
 \ \not\Rightarrow\
 \text{the associated scientific claim is true}.
 $$
@@ -122,7 +122,7 @@ The model-owned runtime selects work subjectively. Older `bid`, `allocate`, and 
 A formalization $\tilde p$ is submitted to a chosen checker:
 
 $$
-r^M=\operatorname{Exec}_M(\tilde p),\qquad e^M=K(j^M,r^M).
+r^M=\mathrm{Exec}_M(\tilde p),\qquad e^M=K(j^M,r^M).
 $$
 
 Installed backends may include Lean, SMT solvers, symbolic checks, and executable Python checks. These have different semantics. A returned result must be interpreted in its formalism and under its assumptions; a failed process is not automatically a counterexample.
@@ -186,7 +186,7 @@ This is descriptive, not causal. `diagnose(...)` uses caller-supplied flags; it 
 The initial conjecture operator searches simple one-feature rules. For a rule $h$,
 
 $$
-\widehat{\operatorname{accuracy}}(h)=\frac1n\sum_i\mathbf1[h(x_i)=y_i].
+\widehat{\mathrm{accuracy}}(h)=\frac1n\sum_i\mathbf1[h(x_i)=y_i].
 $$
 
 The best rule per feature can remain available for discrimination. Agreement on observed cases is not proof or evidence of a causal mechanism.
@@ -196,13 +196,13 @@ The best rule per feature can remain available for discrimination. Agreement on 
 Let $H$ be a random variable over live deterministic hypotheses with supplied weights. Under a fixed candidate intervention $u$, each hypothesis predicts $Y_u=f(H,u)$. Then
 
 $$
-\operatorname{IG}(u)=\mathrm I(H;Y_u)=\mathsf H(Y_u),
+\mathrm{IG}(u)=\mathrm I(H;Y_u)=\mathsf H(Y_u),
 $$
 
 because $\mathsf H(Y_u\mid H)=0$. The supplied heuristic selects
 
 $$
-u^*\in\arg\max_u\frac{\operatorname{IG}(u)}{c(u)}.
+u^*\in\arg\max_u\frac{\mathrm{IG}(u)}{c(u)}.
 $$
 
 Here $c(u)$ is a declared experimental burden. This local heuristic is separate from model-owned task selection. It assumes deterministic predictions and a fixed candidate set; noisy likelihoods require a different policy.
@@ -278,8 +278,8 @@ Finite-sample equivalence is not mathematical equivalence. A future case can dis
 Before an action is executed, record
 
 $$
-d_j=(h_j,a_j,p_j,v_j,\pi_j,\operatorname{parent}_j),\qquad
-h_j=\operatorname{hash}(s_j).
+d_j=(h_j,a_j,p_j,v_j,\pi_j,\mathrm{parent}_j),\qquad
+h_j=\mathrm{hash}(s_j).
 $$
 
 $p_j$ summarizes the action payload; $v_j$ identifies visible artifacts and action/tool choices. A later `decision_outcome` references $d_j$ and its observed or produced artifacts.
@@ -291,8 +291,8 @@ $$
 The current lookup is an index:
 
 $$
-\operatorname{Lookup}(\mathcal H,h,a)
- =\{o_j:h_j=h\ \land\ \operatorname{name}(a_j)=a\}.
+\mathrm{Lookup}(\mathcal H,h,a)
+ =\{o_j:h_j=h\ \land\ \mathrm{name}(a_j)=a\}.
 $$
 
 It can return several records. It matches the stored state digest and action name, not a full regenerated world or independently matched action payload. A caller must inspect payloads and provenance to distinguish those outcomes. The module stores state digests and selected references, not a lossless full context snapshot. It is therefore a basis for later replay work—not an exact general counterfactual simulator or a learned exploration-policy optimizer.
@@ -302,7 +302,7 @@ It can return several records. It matches the stored state digest and action nam
 A commitment links a proposal and test handle with predictions, a metric, and a decision rule:
 
 $$
-\kappa=\operatorname{id}(p,\text{test handle},\hat Y,\mu,\rho).
+\kappa=\mathrm{id}(p,\text{test handle},\hat Y,\mu,\rho).
 $$
 
 The intended ordering is
