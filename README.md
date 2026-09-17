@@ -1,7 +1,6 @@
 # Recursive Discovery
 
 [![Version](https://img.shields.io/badge/version-1.0.0-blue?style=flat-square)](https://github.com/vidal-llaurado/recursive-discovery/releases)
-[![CI](https://github.com/vidal-llaurado/recursive-discovery/actions/workflows/ci.yml/badge.svg)](https://github.com/vidal-llaurado/recursive-discovery/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
 [![License](https://img.shields.io/badge/License-Apache_2.0-green?style=flat-square&logo=apache)](LICENSE)
 
