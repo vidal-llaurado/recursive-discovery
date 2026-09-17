@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+title: "Recursive Discovery"
+message: "If you use this software in research, please cite the repository and release."
+type: software
+repository-code: "https://github.com/vidal-llaurado/recursive-discovery"
+url: "https://github.com/vidal-llaurado/recursive-discovery"
+license: Apache-2.0
+version: 1.0.0
+authors:
+  - family-names: "Vidal Llauradó"
+    given-names: "Joan"

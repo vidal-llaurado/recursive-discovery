@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "recursive-discovery"
+version = "1.0.0"
+description = "A compact system for recursive mathematical and empirical scientific discovery."
+readme = "README.md"
+license = { file = "LICENSE" }
+keywords = ["ai-for-science", "scientific-discovery", "formal-methods", "reproducibility", "llm"]
+requires-python = ">=3.11"
+dependencies = ["numpy>=1.26", "scipy>=1.11", "sympy>=1.12"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[project.scripts]
+recursive-discovery = "recursive_discovery.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
