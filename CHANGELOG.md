@@ -3,6 +3,15 @@
 All notable changes to this project are documented here. This project uses
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 1.1.0 — Native research workflows
+
+- Mission-scoped research, branch attention and lifecycle decisions.
+- Retained source originals, addressable passages and bounded whole-request context.
+- Declared checks, execution attempt history and reviewed capsule handoffs.
+- Shared action lifecycle and integrated mission/reading CLI workflows.
+- Opt-in telemetry recording separate from the scientific ledger.
+- Updated research-cycle diagram and mission-aware specification.
+
 ## 1.0.0 — First public release
 
 The first public release of Recursive Discovery, as described in the

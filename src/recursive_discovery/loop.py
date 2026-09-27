@@ -23,9 +23,9 @@ def drive(
     max_cycles: int = 32,
     patience: int = 3,
 ) -> dict[str, Any]:
-    """Run until the frontier closes, stalls, or reaches a safety bound.
+    """Run until the frontier closes, stalls or reaches the step limit.
 
-    `propose` and `execute` are ordinary callables. There is intentionally no Agent class.
+    The propose and execute arguments are callables.
     """
     history = []
     dry = 0

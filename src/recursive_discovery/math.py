@@ -91,7 +91,7 @@ def verify_claim(
     *,
     cwd: str | Path = ".",
 ) -> list[Artifact]:
-    """Run every compatible installed consequence engine; no engine gets special authority."""
+    """Run every compatible installed checker."""
     portfolio = tools or install_math(ledger)
     selected = tools_for(claim, portfolio)
     if not selected:

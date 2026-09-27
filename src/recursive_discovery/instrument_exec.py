@@ -1,8 +1,4 @@
-"""Deterministic numerical and symbolic diagnostics.
-
-Outputs are derived observations. Running a diagnostic records execution provenance; it does not
-establish that a scientific interpretation of the output is correct.
-"""
+"""Numerical and symbolic diagnostics with recorded execution provenance."""
 from __future__ import annotations
 
 import json

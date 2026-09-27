@@ -33,10 +33,9 @@ def _parse(text: str) -> dict[str, Any]:
 
 
 class CommandModel:
-    """Connect any capable model through a tiny stdin/stdout contract.
+    """Connect a model through stdin and stdout.
 
-    Command receives one JSON prompt on stdin and must emit JSON/text on stdout. This keeps the
-    research software independent of a particular model vendor or SDK.
+    The command receives one JSON request on stdin and returns JSON or text on stdout.
     """
 
     def __init__(self, command: str | list[str], *, timeout: float = 300.0):
@@ -63,7 +62,7 @@ def choose_candidate(
     source_before: str | None = None,
     max_context_chars: int = 14_000,
 ) -> Artifact:
-    """Ask the capable model to choose a scientific move, rather than hard-code a utility score."""
+    """Ask the model to select a research task."""
     if not candidates:
         raise ValueError("no candidates")
     if len(candidates) == 1:
@@ -146,13 +145,13 @@ def drive_research(
     source_before: str | None = None,
     max_steps: int = 30,
 ) -> dict[str, Any]:
-    """Drive the existing scientific frontier with a powerful searchable proposal model."""
+    """Run frontier tasks using a model and literature search."""
     history = []
     for step in range(max_steps):
         tasks = frontier(ledger, kernel)
         if not tasks:
             return {"status": "complete", "steps": step, "history": history}
-        # The capable model values scientific tasks; ordering here only preserves deterministic UI.
+        # Keep task presentation order deterministic; the model chooses priority.
         task = tasks[0]
         result = research_step(
             ledger, kernel, task, model, execute=execute, source_before=source_before,

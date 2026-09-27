@@ -1,10 +1,6 @@
-"""Workbench instruments, both built-in and model-defined.
-
-Built-ins cover standard numerical and symbolic diagnostics. Models may also define expression
-instruments during research; those definitions persist in the ledger and become available to
-later Workbench instances.
-"""
+"""Built-in numerical diagnostics and persistent model-defined expression instruments."""
 from __future__ import annotations
+from .telemetry import traced
 
 from pathlib import Path
 import json
@@ -113,6 +109,7 @@ class Workbench:
         path.write_text(json.dumps(definition.data, sort_keys=True))
         return runner, path
 
+    @traced("instrument.define")
     def define_expression(
         self,
         *,
@@ -124,10 +121,9 @@ class Workbench:
         target: Artifact,
         by: str = "research-model",
     ) -> Artifact:
-        """Validate a safe expression instrument and persist it for future researchers.
+        """Check an expression instrument against its interface cases and store its definition.
 
-        Validation only checks executable semantics against declared interface tests. It does
-        not make the scientific meaning of the diagnostic authoritative.
+        These checks validate execution behavior, not the diagnostic's scientific interpretation.
         """
         name = _safe_name(name)
         if name in SPECS:
@@ -167,6 +163,7 @@ class Workbench:
         self.dynamic[name] = active
         return active
 
+    @traced("instrument.call")
     def call(
         self,
         name: str,

@@ -1,8 +1,9 @@
-"""Durable scientific storage: SQLite graph + content-addressed blobs.
+"""SQLite artifact storage and content-addressed blobs.
 
-This module changes persistence, not epistemics. Its API deliberately mirrors `core.Ledger`.
+SQLiteLedger implements the core.Ledger interface.
 """
 from __future__ import annotations
+from .telemetry import record_artifact
 
 from pathlib import Path
 from typing import Any, Iterable
@@ -111,7 +112,9 @@ class SQLiteLedger:
                     "INSERT INTO artifact_fts(id,text) VALUES(?,?)",
                     (aid, _search_text(kind, data, by)),
                 )
-        return Artifact(aid, kind, data, refs2, by, t)
+        artifact = Artifact(aid, kind, data, refs2, by, t)
+        record_artifact(artifact)
+        return artifact
 
     def _artifact(self, row: sqlite3.Row) -> Artifact:
         ref_rows = self.db.execute(

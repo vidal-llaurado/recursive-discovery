@@ -1,6 +1,6 @@
 # Recursive Discovery
 
-[![Version](https://img.shields.io/badge/version-1.0.0-blue?style=flat-square)](https://github.com/vidal-llaurado/recursive-discovery/releases)
+[![Version](https://img.shields.io/badge/version-1.1.0-blue?style=flat-square)](https://github.com/vidal-llaurado/recursive-discovery/releases)
 [![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
 [![License](https://img.shields.io/badge/License-Apache_2.0-green?style=flat-square&logo=apache)](LICENSE)
 
@@ -85,31 +85,9 @@ Protecting the signing key, evaluator credentials, and execution environment req
 
 Let $D_t=(\mathcal A_t,\mathcal R_t)$ denote the artifact graph, $\Phi_t$ its callable instruments, $G_t$ its concept grammar, and $\mathcal H_t$ its decision history. Together they form the research world $W_t$.
 
-```mermaid
-flowchart TB
-    W["Persistent research world<br/>Wₜ = (Dₜ, Φₜ, Gₜ, Hₜ)"]
-    C["Frontier + context<br/>τₜ ∈ F(Dₜ); Cₜ = Compile(Wₜ, τₜ; B)"]
-    M["Research model<br/>aₜ ∼ πθ(· | Cₜ)<br/>inspect · search · propose · define instruments"]
+![Mission-aware Recursive Discovery cycle: scope and eligible work, bounded context, action selection, signed execution or non-execution research, interpretation, persistent updates, and reuse.](docs/assets/rd-diagram.png)
 
-    subgraph K["EXECUTION AND EVIDENCE BOUNDARY"]
-        J["Declared job jₜ<br/>target · tool · inputs · protocol"]
-        KM["Mathematical check<br/>rₜᴹ = Execᴹ(jₜ)"]
-        KE["Empirical run<br/>rₜᴱ = Execᴱ(jₜ)"]
-        E["Kernel-signed record<br/>eₜ = (rₜ, HMACₖ(rₜ, refs))"]
-        J --> KM --> E
-        J --> KE --> E
-    end
-
-    I["Scientific interpretation<br/>δ = d(ŷ, y); examine assumptions · revise · discriminate · compress"]
-    U["Persistent update + reuse<br/>Dₜ₊₁ = Dₜ ∪ ΔDₜ<br/>Φₜ₊₁ = Φₜ ∪ {φ} when a tool is registered"]
-
-    W --> C --> M
-    M --> J
-    E --> I --> U --> W
-    M -. "decision before outcome" .-> U
-```
-
-*Figure 1. The model selects actions; the execution layer returns records; interpretation creates further work or reusable artifacts. Both evidence streams share one ledger.*
+*Figure 1. Mission scope determines eligible work. The model selects a task and actions from bounded context; declared jobs produce kernel-signed execution records. Interpretation and attention decisions feed persistent updates and reusable resources, then work continues or becomes idle.*
 
 A mathematical check supports a formal statement under stated assumptions. An empirical run measures an outcome under a protocol. The ledger keeps the two separate: a failed process, an out-of-scope observation, and a refuted claim are three different outcomes, and none of them establishes the others.
 
@@ -160,8 +138,6 @@ The lookup retrieves recorded outcomes by state digest and action name, which is
 | **Literature** | arXiv, OpenAlex, Crossref, source reading, publication-date filters. | Network access for retrieval. |
 | **Prospective evaluation** | Commitments, one-use test handles, a separate evaluator service. | Isolate secret bytes, credentials, and filesystem access. |
 
-**What the surface list does not promise.** Running a check is not the same as its being correct: executable checks are not automatically formal proofs, tool success is not a theorem, and the default process worker is not a sandbox. [Security](SECURITY.md) covers the isolation you must supply, and [Formalism §2.2](docs/FORMALISM.md#22-authentication-not-a-theorem) covers what a signature does and does not attest.
-
 The operational runtime automatically executes configured claim checks and experiment runs. Other frontier items require a model session or caller-supplied policy. Current execution is predominantly serial; persistent branches are not a distributed swarm.
 
 An empty frontier means the implemented routing rules found no pending tasks, which is narrower than a research program being scientifically complete.
@@ -173,11 +149,13 @@ An empty frontier means the implemented routing rules found no pending tasks, wh
 | [Formalism](docs/FORMALISM.md) | Notation, kernel semantics, scientific operators, and implementation qualifications. |
 | [Design](docs/DESIGN.md) | Why strategy, interpretation, and tool growth remain outside the execution kernel. |
 | [Usage](docs/USAGE.md) | Installation, model integration, project operation, and source map. |
+| [Workflows](docs/WORKFLOWS.md) | Mission commands, check protocols, attempt history, and capsule handoffs. |
+| [Development](DEVELOPMENT.md) | Local setup, implementation guides, and tests. |
 | [References](docs/REFERENCES.md) | Annotated relationship to Buehler, SwarmWorld, and Dream-RSI. |
 | [Security](SECURITY.md) | Execution isolation, signing keys, and prospective-data boundaries. |
 | [Changelog](CHANGELOG.md) | Release history. |
 
-Buehler's *Recursive Meta-Intelligence* supplied the original representation *to* instrument *to* world framing [1]. SwarmWorld informed the use of persistent artifacts and externally determined consequences [2]. Dream-RSI motivated explicit decision/outcome history [3]. This work combines those influences with separate mathematical and empirical channels; it does not reproduce the experiments or performance claims of the cited systems.
+Buehler's *Recursive Meta-Intelligence* supplied the original representation *to* instrument *to* world framing [1]. SwarmWorld informed the use of persistent artifacts and externally determined consequences [2]. Dream-RSI motivated explicit decision/outcome history [3]. This work combines those influences with separate mathematical and empirical channels.
 
 [1] Markus J. Buehler. [*Recursive Meta-Intelligence*](https://x.com/ProfBuehlerMIT/article/2099834306046664792). 2026.  
 [2] Subhadeep Pal, Fiona Y. Wang, and Markus J. Buehler. [*SwarmWorld: Stigmergic technological evolution in societies of language-model agents*](https://arxiv.org/abs/2608.26081). 2026.  
@@ -185,4 +163,4 @@ Buehler's *Recursive Meta-Intelligence* supplied the original representation *to
 
 ---
 
-**Release scope.** `v1.0.0` is the first public release: the general research machinery, without bundled demonstrations or frozen benchmark outputs. [Apache License 2.0](LICENSE).
+**Release scope.** `v1.1.0` adds mission-scoped research, addressable source reading, explicit checks and attempt history, reviewed capsule handoffs, a shared action lifecycle, and opt-in telemetry recording. [Apache License 2.0](LICENSE).

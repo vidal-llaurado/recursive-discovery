@@ -5,6 +5,7 @@ Kernel:   signed execution records with reproducibility provenance.
 Frontier: missing evidence edges.
 """
 from __future__ import annotations
+from .telemetry import record_artifact, traced
 
 from dataclasses import dataclass
 from pathlib import Path
@@ -99,6 +100,7 @@ class Ledger:
             f.write(_json({"id": a.id, "kind": a.kind, "data": a.data,
                            "refs": a.refs, "by": a.by, "t": a.t}) + "\n")
         self._a[a.id] = a
+        record_artifact(a)
         return a
 
     def get(self, aid: str) -> Artifact:
@@ -145,12 +147,13 @@ class Kernel:
 
     def verify(self, a: Artifact) -> bool:
         sig = a.data.get("_sig")
-        if not sig:
+        if not isinstance(sig, str) or len(sig) != 64 or any(c not in "0123456789abcdef" for c in sig):
             return False
         data = dict(a.data)
         data.pop("_sig", None)
         return hmac.compare_digest(sig, self._sig(a.kind, data, a.refs, a.by))
 
+    @traced("execution")
     def run(
         self,
         ledger: Ledger,
@@ -253,7 +256,29 @@ def frontier(ledger: Ledger, kernel: Kernel) -> list[Task]:
     """Derive work from missing epistemic edges."""
     tasks: list[Task] = []
 
+    # Explicit protocols route through ordinary experiments and an interpretation step.
+    # The researcher interprets the recorded execution result.
+    for target in ledger.all("claim"):
+        if target.data.get("check_policy") != "explicit":
+            continue
+        checks = ledger.children(target.id, "experiment", "checks")
+        if not checks:
+            tasks.append(Task("design_check", target.id, "contribution requires a declared checking protocol"))
+            continue
+        observed = {e.id for check in checks for e in valid_evidence(
+            ledger, kernel, check, check.data.get("evidence_lane", "empirical"))}
+        reviewed = {eid for resolution in ledger.children(target.id, "resolution", "target")
+                    if resolution.data.get("check_interpretation") == 1
+                    and isinstance(resolution.data.get("statement"), str)
+                    and resolution.data["statement"].strip()
+                    for eid in resolution.refs.get("evidence", ()) if eid in observed}
+        if observed - reviewed:
+            tasks.append(Task("interpret", target.id,
+                "declared check has new execution records; interpret outcomes under the protocol"))
+
     for claim in ledger.all("claim"):
+        if claim.data.get("check_policy") == "explicit":
+            continue
         ev = valid_evidence(ledger, kernel, claim, "math")
         if not ev:
             tasks.append(Task("verify", claim.id, "claim lacks adjudicated mathematical evidence", "math"))
@@ -265,11 +290,12 @@ def frontier(ledger: Ledger, kernel: Kernel) -> list[Task]:
                     tasks.append(Task("stress", a.id, "validated claim contains an untested assumption", "empirical"))
 
     for exp in ledger.all("experiment"):
-        ev = valid_evidence(ledger, kernel, exp, "empirical")
+        lane = exp.data.get("evidence_lane", "empirical")
+        ev = valid_evidence(ledger, kernel, exp, lane)
         if not ev:
-            tasks.append(Task("run", exp.id, "experiment lacks adjudicated result", "empirical"))
+            tasks.append(Task("run", exp.id, "experiment lacks adjudicated result", lane))
         elif not any(x.data.get("verdict") == "pass" for x in ev):
-            tasks.append(Task("repair", exp.id, "empirical execution failed", "empirical"))
+            tasks.append(Task("repair", exp.id, "declared execution failed", lane))
         elif exp.refs.get("discriminates") and not ledger.children(exp.id, "resolution", "experiment"):
             tasks.append(Task("resolve", exp.id, "discriminating experiment has not updated the live explanations"))
 
@@ -366,7 +392,7 @@ def frontier(ledger: Ledger, kernel: Kernel) -> list[Task]:
                 "empirical",
             ))
 
-    # New cognitive substrates are proposals until an external consequence validates them.
+    # Validate proposed representations before promotion.
     for instrument in ledger.all("instrument"):
         if instrument.data.get("status") != "proposed":
             continue

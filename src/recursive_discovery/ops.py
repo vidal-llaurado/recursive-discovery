@@ -364,8 +364,7 @@ def expand_representation(
     candidates = [c for c in candidates if c not in coordinates]
     base = _conditional_entropy(cases, outcome, coordinates)
 
-    # If the current coordinates already distinguish observed outcomes, adding a coordinate
-    # is not justified by these data. The explanation family is the thing that failed.
+    # Distinct coordinates already explain the outcomes; revise the explanation family.
     if base <= min_gain:
         return {
             "status": "mechanism",

@@ -1,4 +1,4 @@
-"""Project layout for the finished local research machine."""
+"""Project directories, storage and initialization."""
 from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path

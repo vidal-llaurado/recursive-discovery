@@ -3,11 +3,15 @@ from __future__ import annotations
 
 from collections.abc import Callable
 import json
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
 from .context import compile_context, render_context
 from .core import Artifact, Kernel, Ledger, Task
 from .search import before, remember, remember_text
+
+
+if TYPE_CHECKING:
+    from .investigation import Scope
 
 
 Model = Callable[[str], str]
@@ -153,10 +157,26 @@ def candidate_set(
     return out
 
 
-def activate(ledger: Ledger, candidate: Artifact, *, by: str = "controller") -> Artifact:
+def activate(ledger: Ledger, candidate: Artifact, *, by: str = "controller",
+             admission: Artifact | None = None) -> Artifact:
     """Turn a selected candidate into a live scientific object; unselected candidates stay inert."""
     if candidate.kind != "candidate":
         raise ValueError("candidate artifact required")
+    if candidate.refs.get("response"):
+        from .investigation import Scope, Conflict
+        if (admission is None or admission.kind != "admission"
+                or candidate.id not in admission.refs.get("candidates", ())
+                or admission.refs.get("response") != candidate.refs.get("response")):
+            raise ValueError("external contribution requires explicit admission")
+        if ledger.get(admission.id) != admission:
+            raise ValueError("admission must be a recorded ledger artifact")
+        scope = Scope(ledger, admission.refs["mission"][0])
+        if any(not scope.branch_active(b) for b in admission.refs.get("branch", ())):
+            raise Conflict("admission branch is no longer active")
+        if not scope.allowed(candidate.id):
+            raise PermissionError("contribution is outside current mission information boundary")
+        if admission.refs.get("revision") != (scope.revision.id,):
+            raise Conflict("mission changed since admission")
     kind = candidate.data["object_kind"]
     data = dict(candidate.data.get("payload", {}))
     if kind == "claim":
@@ -169,6 +189,15 @@ def activate(ledger: Ledger, candidate: Artifact, *, by: str = "controller") -> 
         data.setdefault("proposal", candidate.data["commitment"])
 
     refs = {"candidate": [candidate.id]}
+    for role in ("mission", "branch", "passages"):
+        if candidate.refs.get(role):
+            refs[role] = list(candidate.refs[role])
+    if admission is not None:
+        refs["admission"] = [admission.id]
+        if admission.refs.get("branch"):
+            refs["branch"] = list(admission.refs["branch"])
+    if candidate.data.get("citations"):
+        data["citations"] = candidate.data["citations"]
     targets = candidate.refs.get("target", ())
     if targets:
         refs["study" if ledger.get(targets[0]).kind == "study" else "target"] = list(targets)
@@ -178,3 +207,82 @@ def activate(ledger: Ledger, candidate: Artifact, *, by: str = "controller") -> 
     if candidate.refs.get("sources"):
         refs["sources"] = list(candidate.refs["sources"])
     return ledger.put(kind, data, refs, by=by)
+
+
+def store_candidates(
+    ledger: Ledger,
+    task: Task,
+    raws: list[dict[str, Any]],
+    *,
+    visible_ids: set[str],
+    source_ids: set[str],
+    spans: dict[Any, list[tuple[int, int]]] | None = None,
+    actor: str = "research-model",
+    limit: int = 8,
+    scope: Scope | None = None,
+    branch: str | None = None,
+) -> list[Artifact]:
+    out, seen = [], set()
+    for raw in raws[:limit]:
+        from .capsules import RESERVED
+        if not isinstance(raw, dict) or not isinstance(raw.get("payload", {}), dict):
+            raise ValueError("candidate and payload must be objects")
+        kind = str(raw.get("object_kind", "claim"))
+        if kind in RESERVED:
+            raise ValueError("candidates cannot mint control records or observations")
+        commitment = " ".join(str(raw.get("commitment", "")).split())
+        if not commitment:
+            continue
+        predictions = raw.get("predictions", [])
+        sig = json.dumps([kind, commitment, predictions], sort_keys=True, ensure_ascii=False)
+        if sig in seen:
+            continue
+        seen.add(sig)
+        links = {}
+        for role, ids in (raw.get("links", {}) or {}).items():
+            if role in {"mission", "branch", "program", "scope", "response", "admission", "candidate"}:
+                raise ValueError("candidate cannot assign control references")
+            if isinstance(ids, list):
+                keep = [str(x) for x in ids if str(x) in visible_ids]
+                if keep:
+                    links[str(role)] = keep
+        refs = {"target": [task.target]}
+        if scope:
+            refs["mission"] = [scope.root.id]
+        if branch:
+            refs["branch"] = [branch]
+        sources = [str(x) for x in raw.get("source_ids", []) if str(x) in source_ids]
+        if sources:
+            refs["sources"] = sources
+        data = {
+            "object_kind": kind,
+            "title": str(raw.get("title", commitment[:100])),
+            "commitment": commitment,
+            "predictions": predictions,
+            "falsifier": raw.get("falsifier"),
+            "assumptions": raw.get("assumptions", []),
+            "gain": raw.get("gain"),
+            "cost": raw.get("cost"),
+            "payload": raw.get("payload", {}),
+            "links": links,
+        }
+        data["payload"] = {k: v for k, v in data["payload"].items() if k != "citations"}
+        citations = raw.get("citations", [])
+        if not isinstance(citations, list) or len(citations) > 32:
+            raise ValueError("citations must be a list of at most 32 spans")
+        for citation in citations:
+            aid, start, end = citation["id"], citation["start"], citation["end"]
+            field = citation.get("field", "text")
+            if not isinstance(field, str):
+                raise ValueError("citation field must name the delivered coordinate system")
+            ranges = (spans or {}).get((aid, field), (spans or {}).get(aid, []) if field == "text" else [])
+            if (aid not in visible_ids or type(start) is not int or type(end) is not int or start >= end
+                    or not any(lo <= start < end <= hi for lo, hi in ranges)):
+                raise ValueError("citation must be within a passage actually shown in this session")
+        if citations:
+            data["citations"] = [{**{k: c[k] for k in ("id", "start", "end")},
+                                  **({"field": c["field"]} if c.get("field", "text") != "text" else {})}
+                                 for c in citations]
+            refs["passages"] = list(dict.fromkeys(c["id"] for c in citations))
+        out.append(ledger.put("candidate", data, refs, by=actor))
+    return out
